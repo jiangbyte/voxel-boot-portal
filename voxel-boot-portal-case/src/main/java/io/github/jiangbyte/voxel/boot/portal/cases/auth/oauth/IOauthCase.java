@@ -25,7 +25,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.auth.oauth.adapter.port.Oaut
 import io.github.jiangbyte.voxel.boot.portal.domain.auth.oauth.adapter.port.OauthUserProfile;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

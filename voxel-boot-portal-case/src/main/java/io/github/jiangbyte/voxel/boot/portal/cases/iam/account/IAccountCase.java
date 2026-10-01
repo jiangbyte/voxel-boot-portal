@@ -12,7 +12,7 @@ import java.util.Locale;
 import io.github.jiangbyte.voxel.boot.portal.domain.iam.account.adapter.port.PasswordHashingPort;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

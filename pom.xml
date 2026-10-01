@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <name>voxel-boot-portal</name>
-    <description>Voxel Boot Portal · xfg-ddd 七层（types/api/domain/infrastructure/case/trigger/app）</description>
+    <description>Voxel Boot Portal · DDD 七层（types/api/domain/infrastructure/case/trigger/app）</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -14,7 +14,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.auth.adapter.port.AuthCrypto
 import io.github.jiangbyte.voxel.boot.portal.domain.auth.adapter.port.SessionPort;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

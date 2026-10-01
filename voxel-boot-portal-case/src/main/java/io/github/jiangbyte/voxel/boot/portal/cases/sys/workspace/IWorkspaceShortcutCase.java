@@ -12,7 +12,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.sys.workspace.adapter.port.W
 import io.github.jiangbyte.voxel.boot.portal.domain.sys.workspace.adapter.port.WorkspaceShortcutView;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

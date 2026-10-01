@@ -6,7 +6,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.kernel.DomainException;
 import java.util.List;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

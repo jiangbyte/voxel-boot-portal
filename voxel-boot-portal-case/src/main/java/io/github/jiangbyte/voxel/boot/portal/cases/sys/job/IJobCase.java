@@ -10,7 +10,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.sys.job.adapter.port.JobRunn
 import io.github.jiangbyte.voxel.boot.portal.domain.sys.job.adapter.port.JobTriggerCalculator;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

@@ -11,7 +11,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.sys.banner.adapter.port.Bann
 import io.github.jiangbyte.voxel.boot.portal.domain.sys.banner.adapter.port.BannerLinkGuard;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

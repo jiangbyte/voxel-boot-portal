@@ -21,7 +21,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.profile.identity.adapter.por
 import io.github.jiangbyte.voxel.boot.portal.domain.profile.identity.adapter.port.RealNameVerifyPort;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */

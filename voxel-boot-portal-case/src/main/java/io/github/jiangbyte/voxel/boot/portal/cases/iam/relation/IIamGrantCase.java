@@ -19,7 +19,7 @@ import io.github.jiangbyte.voxel.boot.portal.domain.iam.relation.adapter.port.Re
 import io.github.jiangbyte.voxel.boot.portal.domain.iam.role.Role;
 
 /**
- * 用例接口（xfg-ddd Case）。
+ * 用例接口。
  *
  * Author: Charlie
  */
