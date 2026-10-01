@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    github.jiangbyte.io: info
+
+voxel:
+  config:
+    crypto-key: ${VOXEL_CONFIG_CRYPTO_KEY:${APP__CONFIG_CRYPTO_KEY:XV1rJ-UPAbWeYjprihKNS3ZCCHdBuVbIc0WXmYc70ck=}}

@@ -1,0 +1,2 @@
+io.github.jiangbyte.voxel.boot.portal.infrastructure.InfrastructureAutoConfiguration
+io.github.jiangbyte.voxel.boot.portal.infrastructure.security.SaTokenSecurityConfig

@@ -1,0 +1,25 @@
+# Maven / IDE
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs / runtime
+logs/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db

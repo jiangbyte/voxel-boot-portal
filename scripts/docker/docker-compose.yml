@@ -1,0 +1,162 @@
+# Voxel 全栈：MySQL + Redis + MinIO + voxel-boot + voxel-admin + voxel-portal
+# 镜像从 registry.cn-beijing.aliyuncs.com/czbyte 拉取，Compose 不包含 build。
+# cp .env.example .env && docker compose up -d
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:-registry.cn-beijing.aliyuncs.com/czbyte/mysql:9.6.0}
+    container_name: voxel-mysql
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-voxel_boot}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - voxel-mysql-data:/var/lib/mysql
+      - ../voxel_boot.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --explicit_defaults_for_timestamp=true
+      - --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+  redis:
+    image: ${REDIS_IMAGE:-registry.cn-beijing.aliyuncs.com/czbyte/redis:8.6.2}
+    container_name: voxel-redis
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ./redis/conf/redis.conf:/redis/config/redis.conf:ro
+      - voxel-redis-data:/redis/data
+    command:
+      - sh
+      - -c
+      - redis-server /redis/config/redis.conf --requirepass "$$REDIS_PASSWORD"
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+  minio:
+    image: ${MINIO_IMAGE:-registry.cn-beijing.aliyuncs.com/czbyte/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1}
+    container_name: voxel-minio
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - voxel-minio-data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+  voxel-boot:
+    image: registry.cn-beijing.aliyuncs.com/czbyte/voxel-boot:${VOXEL_BOOT_VERSION:-latest}
+    container_name: voxel-boot
+    env_file: .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      TZ: Asia/Shanghai
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      SERVER_PORT: ${SERVER_PORT:-8000}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DB_WRITE_URL: ${DB_WRITE_URL:?set DB_WRITE_URL in .env}
+      DB_WRITE_USERNAME: ${DB_WRITE_USERNAME:-root}
+      DB_WRITE_PASSWORD: ${DB_WRITE_PASSWORD:?set DB_WRITE_PASSWORD in .env}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      VOXEL_CONFIG_CRYPTO_KEY: ${VOXEL_CONFIG_CRYPTO_KEY:?set VOXEL_CONFIG_CRYPTO_KEY in .env}
+      SA_TOKEN_COOKIE_SECURE: ${SA_TOKEN_COOKIE_SECURE:-false}
+      VOXEL_SECURITY_EXPOSE_ACTUATOR: ${VOXEL_SECURITY_EXPOSE_ACTUATOR:-true}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0}
+    ports:
+      - "${SERVER_PORT:-8000}:${SERVER_PORT:-8000}"
+    volumes:
+      - voxel-boot-logs:/app/logs
+      - voxel-boot-storage:/app/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:$${SERVER_PORT:-8000}/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+  voxel-admin:
+    image: registry.cn-beijing.aliyuncs.com/czbyte/voxel-admin:${VOXEL_ADMIN_VERSION:-latest}
+    container_name: voxel-admin
+    env_file: .env
+    depends_on:
+      voxel-boot:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      BACKEND_HOST: voxel-boot
+      BACKEND_PORT: ${SERVER_PORT:-8000}
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-10m}
+      # nginx 模板变量；缺失时 envsubst 不替换，会导致 nginx 启动失败
+      CONTENT_SECURITY_POLICY: "${VOXEL_ADMIN_CONTENT_SECURITY_POLICY:-default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; font-src 'self' data:; connect-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'}"
+      HSTS_HEADER: ${VOXEL_HSTS_HEADER:-}
+    ports:
+      - "${VOXEL_ADMIN_PORT:-5173}:81"
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+  voxel-portal:
+    image: registry.cn-beijing.aliyuncs.com/czbyte/voxel-portal:${VOXEL_PORTAL_VERSION:-latest}
+    container_name: voxel-portal
+    env_file: .env
+    depends_on:
+      voxel-boot:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      BACKEND_HOST: voxel-boot
+      BACKEND_PORT: ${SERVER_PORT:-8000}
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-10m}
+      CONTENT_SECURITY_POLICY: "${VOXEL_PORTAL_CONTENT_SECURITY_POLICY:-default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; font-src 'self' data:; connect-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'}"
+      HSTS_HEADER: ${VOXEL_HSTS_HEADER:-}
+    ports:
+      - "${VOXEL_PORTAL_PORT:-5174}:80"
+    restart: unless-stopped
+    networks:
+      - voxel-net
+
+networks:
+  voxel-net:
+    driver: bridge
+
+volumes:
+  voxel-mysql-data:
+  voxel-redis-data:
+  voxel-minio-data:
+  voxel-boot-logs:
+  voxel-boot-storage:

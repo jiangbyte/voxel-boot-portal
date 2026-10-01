@@ -1,0 +1,122 @@
+server:
+  port: 8001
+
+spring:
+  application:
+    name: voxel-boot-ddd
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  threads:
+    virtual:
+      enabled: true
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
+    serialization:
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+  flyway:
+    enabled: false
+  servlet:
+    multipart:
+      # 对齐 archive：默认 1MB 会导致大图上传被 Tomcat 截断（浏览器 NS_ERROR_NET_INTERRUPT）
+      max-file-size: ${VOXEL_MULTIPART_MAX_FILE_SIZE:50MB}
+      max-request-size: ${VOXEL_MULTIPART_MAX_REQUEST_SIZE:55MB}
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:infra123!}
+      database: ${REDIS_DATABASE:0}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: assign_id
+
+spring.datasource:
+  dynamic:
+    primary: master
+    datasource:
+      master:
+        url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/voxel_boot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+        username: ${DB_USER:root}
+        password: ${DB_PASSWORD:infra123!}
+        driver-class-name: com.mysql.cj.jdbc.Driver
+
+sa-token:
+  token-name: Authorization
+  token-style: random-32
+  is-concurrent: true
+  is-share: false
+  is-read-header: true
+  is-read-cookie: ${SA_TOKEN_IS_READ_COOKIE:true}
+  timeout: 86400
+
+voxel:
+  config:
+    crypto-key: ${VOXEL_CONFIG_CRYPTO_KEY:${APP__CONFIG_CRYPTO_KEY:}}
+  app:
+    frontend-base-url: ${VOXEL_ADMIN_FRONTEND_BASE_URL:http://localhost:5173}
+    portal-frontend-base-url: ${VOXEL_PORTAL_FRONTEND_BASE_URL:http://localhost:5174}
+  security:
+    ignore-urls:
+      - /actuator/**
+      - /doc.html
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /api/v1/public/**
+      - /api/v1/admin/auth/session/captcha
+      - /api/v1/admin/auth/session/password-key
+      - /api/v1/admin/auth/session/login
+      - /api/v1/admin/auth/session/send-login-code
+      - /api/v1/admin/auth/session/forgot-password
+      - /api/v1/admin/auth/session/forgot-password/phone
+      - /api/v1/admin/auth/session/reset-password
+      - /api/v1/admin/auth/session/reset-password/phone
+      - /api/v1/admin/auth/oauth/*/authorize
+      - /api/v1/admin/auth/oauth/*/callback
+      - /api/v1/admin/auth/oauth/exchange
+      - /api/v1/admin/auth/public/**
+      - /api/v1/portal/auth/session/captcha
+      - /api/v1/portal/auth/session/password-key
+      - /api/v1/portal/auth/session/login
+      - /api/v1/portal/auth/session/send-login-code
+      - /api/v1/portal/auth/session/register
+      - /api/v1/portal/auth/session/register/send-code
+      - /api/v1/portal/auth/session/forgot-password
+      - /api/v1/portal/auth/session/forgot-password/phone
+      - /api/v1/portal/auth/session/reset-password
+      - /api/v1/portal/auth/session/reset-password/phone
+      - /api/v1/portal/auth/oauth/*/authorize
+      - /api/v1/portal/auth/oauth/*/callback
+      - /api/v1/portal/auth/oauth/exchange
+      - /api/v1/portal/auth/oauth/wechat-mp/login
+      - /api/v1/portal/auth/public/**
+      - /api/v1/portal/sys/banner/list
+      - /api/v1/portal/sys/banner/interaction
+      - /api/v1/portal/sys/dict/tree
+      - /api/v1/portal/iam/resource/current
+      - /api/v1/portal/sys/notice/list
+      - /api/*/internal/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    root: info
+    github.jiangbyte.io: info
